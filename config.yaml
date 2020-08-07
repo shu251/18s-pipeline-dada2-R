@@ -1,0 +1,17 @@
+proj_name: dada2-18s
+raw_data: /vortexfs1/omics/huber/shu/18s-pipeline-dada2-R/raw-seqs
+scratch:  /vortexfs1/scratch/sarahhu/18s-output
+outputDIR: /vortexfs1/omics/huber/shu/18s-pipeline-dada2-R/trimmed-seqs
+
+primers: /vortexfs1/omics/huber/db/adapters/amplicon-18s.fa
+# primers: /vortexfs1/omics/huber/db/adapters/amplicon-16s.fa
+
+# Fastq file suffix, following the read pair designation
+suffix: .fastq.gz
+# suffix: _001.fastq.gz
+
+# Read pair designations
+#r1_suf: 1
+#r2_suf: 2
+r1_suf: R1
+r2_suf: R2
