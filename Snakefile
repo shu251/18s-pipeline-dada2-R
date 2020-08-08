@@ -20,10 +20,6 @@ SUF = config["suffix"]
 R1_SUF = str(config["r1_suf"])
 R2_SUF = str(config["r2_suf"])
 
-print(SUF)
-print(R1_SUF)
-print(INPUTDIR)
-
 # Use glob statement to find all samples in 'raw_data' directory
 ## Wildcard '{num}' must be equivalent to 'R1' or '1', meaning the read pair designation.
 SAMPLE_LIST,NUMS = glob_wildcards(INPUTDIR + "/{sample}_{num}" + SUF)
@@ -40,9 +36,12 @@ rule all:
     raw_zip = expand("{scratch}/fastqc/{sample}_{num}_fastqc.zip", scratch = SCRATCH, sample=SAMPLE_SET, num=SET_NUMS),
 
     # Cut-adapt output
-    trimmed_out = expand("{scratch}/trimmed/{sample}_{num}_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num=SET_NUMS),
-    trimmed_qc = expand("{scratch}/trimmed/{sample}.qc.txt", scratch = SCRATCH, sample = SAMPLE_SET),
+    cutadapt_out = expand("{scratch}/trim-cutadapt/{sample}_{num}_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num=SET_NUMS),
+    cutadapt_qc = expand("{scratch}/trim-cutadapt/{sample}.qc.txt", scratch = SCRATCH, sample = SAMPLE_SET),
     
+    # Trimmomatic output
+    matic_out = expand("{scratch}/trim-matic/{sample}_{num}_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num = SET_NUMS),
+
     # fastqc output after trimming primers
     trim_html = expand("{scratch}/fastqc/{sample}_{num}_trimmed_fastqc.html", scratch= SCRATCH, sample=SAMPLE_SET, num=SET_NUMS),
     trim_zip = expand("{scratch}/fastqc/{sample}_{num}_trimmed_fastqc.zip", scratch= SCRATCH, sample=SAMPLE_SET, num=SET_NUMS),
@@ -56,7 +55,6 @@ rule all:
 rule fastqc:
   input:    
     INPUTDIR + "/{sample}_{num}.fastq.gz"
-#    INPUTDIR + "/{sample}_{num}" + SUF
   output:
     html = SCRATCH + "/fastqc/{sample}_{num}_fastqc.html",
     zip = SCRATCH + "/fastqc/{sample}_{num}_fastqc.zip"
@@ -70,24 +68,40 @@ rule cutadapt:
     input:
         [INPUTDIR + "/{sample}_" + R1_SUF + SUF, INPUTDIR + "/{sample}_" + R2_SUF + SUF]
     output:
-        fastq1 = SCRATCH + "/trimmed/{sample}_" + R1_SUF + "_trim.fastq.gz",
-        fastq2 = SCRATCH + "/trimmed/{sample}_" + R2_SUF + "_trim.fastq.gz",
-        qc = SCRATCH + "/trimmed/{sample}.qc.txt"
+        fastq1 = SCRATCH + "/trim-cutadapt/{sample}_" + R1_SUF + "_trim.fastq.gz",
+        fastq2 = SCRATCH + "/trim-cutadapt/{sample}_" + R2_SUF + "_trim.fastq.gz",
+        qc = SCRATCH + "/trim-cutadapt/{sample}.qc.txt"
     params:
         # https://cutadapt.readthedocs.io/en/stable/guide.html#adapter-types
         adapters = "-a CCAGCASCYGCGGTAATTCC -A ACTTTCGTTCTTGATYRA",
         # https://cutadapt.readthedocs.io/en/stable/guide.html#
-        others = "--minimum-length 100 -q 20 --max-n 0 -e 0.3 -O 5"
+        others = "--minimum-length 100 -q 10 --max-n 0 -e 0.4 --pair-filter=both"
     log:
         "logs/cutadapt/{sample}.log"
     threads: 4 # set desired number of threads here
     wrapper:
         "0.35.2/bio/cutadapt/pe"
-       # "0.64.0/bio/cutadapt/pe"
+
+rule trimmomatic_pe:
+  input:
+    r1 = INPUTDIR + "/{sample}_" + R1_SUF + SUF,
+    r2 = INPUTDIR + "/{sample}_" + R2_SUF + SUF
+  output:
+    r1 = SCRATCH + "/trim-matic/{sample}_" + R1_SUF + "_trim.fastq.gz",
+    r2 = SCRATCH + "/trim-matic/{sample}_" + R2_SUF + "_trim.fastq.gz",
+    r1_unpaired = SCRATCH + "/trim-matic/{sample}_1.unpaired.fastq.gz",
+    r2_unpaired = SCRATCH + "/trim-matic/{sample}_2.unpaired.fastq.gz"
+  log:
+    SCRATCH + "/trim-matic/logs/trimmomatic/{sample}.log"
+  params:
+    trimmer = ["ILLUMINACLIP:{}:8:12:8".format(ADAPTERS), "LEADING:2", "TRAILING:2", "SLIDINGWINDOW:10:2", "MINLEN:150"],
+    extra = ""
+  wrapper:
+    "0.35.2/bio/trimmomatic/pe"
 
 rule fastqc_trim:
   input:
-    SCRATCH + "/trimmed/{sample}_{num}_trim.fastq.gz"
+    SCRATCH + "/trim-matic/{sample}_{num}_trim.fastq.gz"
   output:
     html = SCRATCH + "/fastqc/{sample}_{num}_trimmed_fastqc.html",
     zip = SCRATCH + "/fastqc/{sample}_{num}_trimmed_fastqc.zip"
