@@ -1,0 +1,38 @@
+__default__:
+    system: 'slurm'
+    account: sarahhu
+    time: 300 # in minutes
+    mem: 10 # in GB
+    threads: 8
+    queue: compute
+    nodes: 1
+    command_options:
+        slurm:
+            command: "sbatch --parsable --qos=unlim"
+            key_mapping:
+            name: "--job-name={}"
+            threads: "-n {}"
+            mem: "--mem={}g"
+            account: "--account={}"
+            queue: "--partition={}"
+            time: "--time={}"
+            nodes: "-N {}"  # number of tasks
+
+assign_tax_otu:
+   queue: compute
+   time: 720
+   mem: 32
+   threads: 16
+
+
+dada2:
+   queue: compute
+   time: 1440
+   mem: 16
+   threads: 8
+
+assign_tax:
+   queue: compute
+   time: 1440
+   mem: 16
+   threads: 8
