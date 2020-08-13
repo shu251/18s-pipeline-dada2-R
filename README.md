@@ -1,10 +1,8 @@
 # 18s-pipeline-dada2-R
 
-Pipeline for running DADA2 in R specific for microbial eukaryotic work.
+## Pipeline for running DADA2 in R specific for microbial eukaryotic work.
 
-
-
-## Perform initial QC & removal primers
+### (1) Perform initial QC & removal primers
 
 For high-throughput sequence quality control and primer removal, I use snakemake.
 
@@ -21,13 +19,23 @@ conda activate snake-qc
 2. **Raw fastq sequences** should be
 
 
+### (2) DADA2 pipeline in R
 
-## DADA2 pipeline in R
 
 
 ## Assign taxonomy to reference sequence
 
+Extract reference sequences from qiime2 run:
+```
+# Enter qiime2 environment
+qiime tools export --input-path ref-sequences.qza  
+	--output-path ref-seqs/
 
+```
+Output will be a new directory called ```ref-seqs/```, inside is a .fna file with all reference sequences. Fasta headers are **Feature.ID**s from output ASV or OTU table.   
+
+
+Now import those reads into R to assign taxonomy from dada2.
 ```
 ## R v3.6.1
 
