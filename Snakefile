@@ -38,6 +38,8 @@ rule all:
     # Cut-adapt output
     cutadapt_out = expand("{scratch}/trim-cutadapt/{sample}_{num}_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num=SET_NUMS),
     cutadapt_qc = expand("{scratch}/trim-cutadapt/{sample}.qc.txt", scratch = SCRATCH, sample = SAMPLE_SET),
+#    cutadapt_r1_se = expand("{scratch}/trim-cutadapt-se/{sample}_R1_se_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num=SET_NUMS),    
+#    cutadapt_r2_se = expand("{scratch}/trim-cutadapt-se/{sample}_R2_se_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num=SET_NUMS),
     
     # Trimmomatic output
     matic_out = expand("{scratch}/trim-matic/{sample}_{num}_trim.fastq.gz", scratch = SCRATCH, sample = SAMPLE_SET, num = SET_NUMS),
@@ -75,12 +77,40 @@ rule cutadapt:
         # https://cutadapt.readthedocs.io/en/stable/guide.html#adapter-types
         adapters = "-a CCAGCASCYGCGGTAATTCC -A ACTTTCGTTCTTGATYRA",
         # https://cutadapt.readthedocs.io/en/stable/guide.html#
-        others = "--minimum-length 100 -q 10 --max-n 0 -e 0.4 --pair-filter=both"
+        others = "-m 1 -q 10 --max-n 0 -e 0.4 --pair-filter=both"
     log:
         "logs/cutadapt/{sample}.log"
     threads: 4 # set desired number of threads here
     wrapper:
         "0.35.2/bio/cutadapt/pe"
+
+#rule cutadapt_r1:
+#    input:
+#        INPUTDIR + "/{sample}_" + R1_SUF + SUF
+#    output:
+#        fastq = SCRATCH + "/trim-cutadapt-se/{sample}_R1_se_trim.fastq.gz",
+#        qc = SCRATCH + "/trim-cutadapt-se/{sample}_r1.qc.txt"
+#    params:
+#        "-a CCAGCASCYGCGGTAATTCC -q 10 --minimum-length 50 -e 0.6"
+#    log:
+#        "logs/cutadapt/{sample}.log"
+#    threads: 4 # set desired number of threads here
+#    wrapper:
+#        "0.35.2/bio/cutadapt/se"
+
+#rule cutadapt_r2:
+#    input:
+#       INPUTDIR + "/{sample}_" + R2_SUF + SUF
+#    output:
+#        fastq = SCRATCH + "/trim-cutadapt-se/{sample}_R2_se_trim.fastq.gz",                                                                                               
+#        qc = SCRATCH + "/trim-cutadapt-se/{sample}_r2.qc.txt"
+#    params:
+#        "-a ACTTTCGTTCTTGATYRA -q 10 --minimum-length 50 -e 0.6"
+#    log:
+#        "logs/cutadapt/{sample}.log"
+#    threads: 4 # set desired number of threads here
+#   wrapper:
+#       "0.35.2/bio/cutadapt/se"
 
 rule trimmomatic_pe:
   input:
@@ -94,7 +124,7 @@ rule trimmomatic_pe:
   log:
     SCRATCH + "/trim-matic/logs/trimmomatic/{sample}.log"
   params:
-    trimmer = ["ILLUMINACLIP:{}:8:12:8".format(ADAPTERS), "LEADING:2", "TRAILING:2", "SLIDINGWINDOW:10:2", "MINLEN:150"],
+    trimmer = ["ILLUMINACLIP:{}:5:10:7:6:TRUE".format(ADAPTERS), "LEADING:2", "TRAILING:2", "SLIDINGWINDOW:10:1", "MINLEN:100"],
     extra = ""
   wrapper:
     "0.35.2/bio/trimmomatic/pe"
