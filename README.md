@@ -21,9 +21,18 @@ conda activate snake-qc
 
 ### (2) DADA2 pipeline in R
 
+```
+library(dada2)
+
+## pending ##
+
+```
 
 
-## Assign taxonomy to reference sequence
+## Assign taxonomy to reference sequences  
+
+Use ```assignTaxonomy()``` from the **dada2** package to assign taxonomy. Below code can also be used to assign taxonomy to other sequences.   
+
 
 Extract reference sequences from qiime2 run:
 ```
@@ -56,7 +65,9 @@ seqs <- as.character(fna_df$SEQUENCE) #extract sequences
 # Assign taxonomy. Note that for the PR2 database in dada2, you need to use the taxLevels argument as is here (do not use the default)
 taxa_pr2 <- assignTaxonomy(seqs, "/vortexfs1/omics/huber/shu/db/pr2-db/pr2_version_4.12.0_18S_dada2.fasta.gz", taxLevels = c("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species"), multithread = TRUE)
 
-df_assigned$SEQUENCE <- row.names(df_assigned) 
+# Save taxa_pr2 output, see "Compile-taxonomy-assignments.ipynb" to compile with exisiting count table
+```
 
+See R notebook ```Compile-taxonomy-assignments.ipynb``` to compile taxonomy assignments with previous count table. This specific example compared output from qiime2 taxonomy and dada2 approach.
 
 
