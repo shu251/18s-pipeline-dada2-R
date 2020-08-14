@@ -28,12 +28,13 @@ library(dada2)
 
 ```
 
+***
 
 ## Assign taxonomy to reference sequences  
 
 Use ```assignTaxonomy()``` from the **dada2** package to assign taxonomy. Below code can also be used to assign taxonomy to other sequences.   
 
-
+### (1) Bring sequences for assignment into R
 Extract reference sequences from qiime2 run:
 ```
 # Enter qiime2 environment
@@ -57,7 +58,7 @@ SEQUENCE <- paste(fna_in)
 fna_df <- data.frame(Feature.ID, SEQUENCE)
 
 
-# Assign taxonomy
+### (2) Assign taxonomy
 library(dada2)
 
 seqs <- as.character(fna_df$SEQUENCE) #extract sequences
@@ -68,6 +69,7 @@ taxa_pr2 <- assignTaxonomy(seqs, "/vortexfs1/omics/huber/shu/db/pr2-db/pr2_versi
 # Save taxa_pr2 output, see "Compile-taxonomy-assignments.ipynb" to compile with exisiting count table
 ```
 
+### (3) Compile with original fasta file or count table
 See R notebook ```Compile-taxonomy-assignments.ipynb``` to compile taxonomy assignments with previous count table. This specific example compared output from qiime2 taxonomy and dada2 approach.
 
 
