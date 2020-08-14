@@ -56,17 +56,22 @@ fna_in <- readDNAStringSet("xxxx.fasta") #Import reference sequences
 Feature.ID <- names(fna_in)
 SEQUENCE <- paste(fna_in)
 fna_df <- data.frame(Feature.ID, SEQUENCE)
-
+# Dataframe with 1 column of sequence header and a 2nd column with sequence.
+```
 
 ### (2) Assign taxonomy
+
+```
 library(dada2)
 
 seqs <- as.character(fna_df$SEQUENCE) #extract sequences
 
 # Assign taxonomy. Note that for the PR2 database in dada2, you need to use the taxLevels argument as is here (do not use the default)
-taxa_pr2 <- assignTaxonomy(seqs, "/vortexfs1/omics/huber/shu/db/pr2-db/pr2_version_4.12.0_18S_dada2.fasta.gz", taxLevels = c("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species"), multithread = TRUE)
+taxa_pr2 <- assignTaxonomy(seqs, "/vortexfs1/omics/huber/shu/db/pr2-db/pr2_version_4.12.0_18S_dada2.fasta.gz", 
+	taxLevels = c("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species"), 
+	multithread = TRUE, minBoot = 0, outputBootstraps = TRUE)
 
-# Save taxa_pr2 output, see "Compile-taxonomy-assignments.ipynb" to compile with exisiting count table
+# See "Compile-taxonomy-assignments.ipynb" to compile with exisiting count table
 ```
 
 ### (3) Compile with original fasta file or count table
